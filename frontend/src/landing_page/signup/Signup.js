@@ -25,6 +25,11 @@ const Signup = () => {
 
       // Pass token via URL since frontend & dashboard are different origins/ports.
       // Dashboard will read it and store it in its OWN localStorage.
+
+      console.log("API_URL:", API_URL);
+      console.log("DASHBOARD_URL:", DASHBOARD_URL);
+      console.log("Redirecting to:", `${DASHBOARD_URL}/?token=${token}`);
+
       window.location.href = `${DASHBOARD_URL}/?token=${token}`;
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
