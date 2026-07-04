@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const dns = require("dns");
 
 const { HoldingsModel } = require("./model/HoldingsModel");
 const { PositionsModel } = require("./model/PositionsModel");
@@ -15,6 +16,8 @@ const { UserModel } = require("./model/UserModel"); // Import User Model
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
 const JWT_SECRET = process.env.JWT_SECRET || "YOUR_SUPER_SECRET_TRADING_KEY";
+
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 const app = express();
 
@@ -203,72 +206,6 @@ app.use(bodyParser.json());
 // });
 
 // ====== AUTH ROUTES ======
-
-app.post("/register", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    const existing = await UserModel.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new UserModel({ name, email, password: hashedPassword });
-    await newUser.save();
-
-    const token = jwt.sign(
-      { id: newUser._id, email: newUser.email },
-      JWT_SECRET,
-      {
-        expiresIn: "1d",
-      },
-    );
-
-    res.status(201).json({ token, name: newUser.name });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-app.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-      expiresIn: "1d",
-    });
-
-    res.status(200).json({ token, name: user.name });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Middleware-style protected check, used by dashboard
-app.get("/verify", async (req, res) => {
-  const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ message: "No token" });
-
-  try {
-    const decoded = jwt.verify(auth.split(" ")[1], JWT_SECRET);
-    res.json({ valid: true, email: decoded.email });
-  } catch {
-    res.status(401).json({ message: "Invalid token" });
-  }
-});
 
 app.get("/allHoldings", async (req, res) => {
   let allHoldings = await HoldingsModel.find({});

@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./Home";
 import ProtectedRoute from "./ProtectedRoute";
 
-const Apps = () => {
+const App = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -14,4 +14,4 @@ const Apps = () => {
   );
 };
 
-export default Apps;
+export default App;
